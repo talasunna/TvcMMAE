@@ -4,9 +4,9 @@ library(ggplot2)
 rm(list = ls())
 
 # --- paths ---
-sim_path <- "~/Desktop/Thesis/TMMAE/Mouse1 ADC i.v. 10 mg_kg.pkml"
-out_path <- "Organism|VenousBlood|Plasma|TMMAE|Concentration"
-dataset_path <- "~/Desktop/Thesis/TMMAE/Chang_et_al.PK_observed.IV__10mgKg_ADC_Mouse.pkml"
+sim_path <- "~/Desktop/Thesis/MMAE/Mouse1 MMAE i.v. 10 mg_kg.pkml"
+out_path <- "Organism|VenousBlood|Plasma|MMAE|Concentration"
+dataset_path <- "~/Desktop/Thesis/MMAE/Chang et al.MMAE.IV__10mgKg_MMAE_Mouse.pkml"
 
 # --- load observed data ---
 obs_data <- loadDataSetFromPKML(filePath = dataset_path)
@@ -18,14 +18,15 @@ print(obs_data)
 
 sim_sa <- loadSimulation(sim_path)
 setOutputs(out_path, sim_sa)
-#potentialSAParameters <- potentialVariableParameterPathsFor(sim_sa)
-#print(potentialSAParameters)
+
+# optional:
+# potentialSAParameters <- potentialVariableParameterPathsFor(sim_sa)
+# print(potentialSAParameters)
 
 sa_parameter_paths <- c(
-  "**|TMMAE|Kd (FcRn) in Endosomal Space",
-  "TMMAE-HER2-Chang et al|Kd",
-  "HER2|Reference concentration",
-  "TMMAE|Fraction unbound (plasma, reference value)"
+  "MMAE|Fraction unbound (plasma, reference value)",
+  "MMAE|Lipophilicity",
+  "MMAE-Total Hepatic Clearance-Mouse|Specific clearance"
 )
 
 sa <- SensitivityAnalysis$new(
@@ -75,7 +76,7 @@ to_df <- function(x, pk_name) {
 
 sa_df <- rbind(
   to_df(sens_cmax, "C_max"),
-  to_df(sens_auc, "AUC_last_obsWindow"),
+  to_df(sens_auc, "AUC_tEnd"),
   to_df(sens_cl, "CL")
 )
 
@@ -87,35 +88,23 @@ print(sa_df)
 # =========================
 
 apply_changes <- function(sim,
-                          fcrn_endo_kd = NULL,
-                          tmmae_her2_kd = NULL,
-                          herref = NULL,
-                          dose = NULL,
-                          fu = NULL) {
+                          fu = NULL,
+                          lipophilicity = NULL,
+                          specific_clearance = NULL) {
   
   if (!is.null(fu)) {
-    fu_plasma <- getParameter("TMMAE|Fraction unbound (plasma, reference value)", sim)
+    fu_plasma <- getParameter("MMAE|Fraction unbound (plasma, reference value)", sim)
     setParameterValues(fu_plasma, fu)
   }
   
-  if (!is.null(tmmae_her2_kd)) {
-    her2_kd <- getParameter("TMMAE-HER2-Chang et al|Kd", sim)
-    setParameterValues(her2_kd, tmmae_her2_kd)
+  if (!is.null(lipophilicity)) {
+    lip <- getParameter("MMAE|Lipophilicity", sim)
+    setParameterValues(lip, lipophilicity)
   }
   
-  if (!is.null(fcrn_endo_kd)) {
-    fcrnkd <- getParameter("**|TMMAE|Kd (FcRn) in Endosomal Space", sim)
-    setParameterValues(fcrnkd, fcrn_endo_kd)
-  }
-  
-  if (!is.null(dose)) {
-    dose_par <- getParameter("Events|10 mg/kg|Application_1|ProtocolSchemaItem|DosePerBodyWeight", sim)
-    setParameterValues(dose_par, dose)
-  }
-  
-  if (!is.null(herref)) {
-    herref_par <- getParameter("HER2|Reference concentration", sim)
-    setParameterValues(herref_par, herref)
+  if (!is.null(specific_clearance)) {
+    sc <- getParameter("MMAE-Total Hepatic Clearance-Mouse|Specific clearance", sim)
+    setParameterValues(sc, specific_clearance)
   }
   
   sim$solver$absTol <- 1e-12
@@ -128,6 +117,13 @@ gmfe <- function(pred, obs) {
   ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
   if (!any(ok)) stop("No valid positive observed/predicted pairs for GMFE.")
   10^(mean(abs(log10(pred[ok] / obs[ok]))))
+}
+
+fold_error <- function(pred, obs) {
+  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
+  out <- rep(NA_real_, length(pred))
+  out[ok] <- 10^(abs(log10(pred[ok] / obs[ok])))
+  out
 }
 
 get_last_obs_time <- function(obs_data) {
@@ -154,7 +150,7 @@ get_obs_auc_last_obs_window <- function(obs_data) {
   # trapezoidal AUC in µmol*h/l
   auc_h <- sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
   
-  # convert to µmol*min/l to match OSP PK analysis output
+  # convert to µmol*min/l to match OSP PK output
   auc_min <- auc_h * 60
   
   auc_min
@@ -182,7 +178,7 @@ get_sim_auc_last_obs_window <- function(sim_results, output_path, end_time_h) {
   )
   
   auc_obs_window$startTime <- 0
-  auc_obs_window$endTime <- end_time_h *60
+  auc_obs_window$endTime <- end_time_h * 60
   
   pk <- calculatePKAnalyses(results = sim_results)
   pk_df <- pkAnalysesToDataFrame(pk)
@@ -195,33 +191,32 @@ get_sim_auc_last_obs_window <- function(sim_results, output_path, end_time_h) {
   
   row$Value[[1]]
 }
+
 # =========================
 # scenarios
 # =========================
 
 scenarios <- list(
   list(
-    name = "FcRnKd: 1.07 μmol/l, HER2Kd: 6 μmol/l, HER2 ref: 0.5 μmol/l, fu = 0.25",
-    fcrn_endo_kd = 1.07,
-    tmmae_her2_kd = 1,
-    herref = 0.7,
-    dose = NULL,
-    fu = NULL
+    name = "FU = 0.6, Lip = 2.7, SC = 0.02",
+    fu = 0.5,
+    lipophilicity = 2.75,
+    specific_clearance = 0.028
   )
   
-   #list(name = "FcRnKd: 1.07 μmol/l, HER2Kd: 8 μmol/l, HER2 ref: 0.25 μmol/l, fu = 0.5", 
-        #fcrn_endo_kd = 1.07,
-        #tmmae_her2_kd = 8,
-        #herref = 0.25, 
-        #dose = NULL,
-        #fu = 0.5),
-  
-  #list(name = "FcRnKd: 1.07 μmol/l, HER2Kd: 10 μmol/l, HER2 ref: 0.1 μmol/l, fu = 0.75", 
-       #fcrn_endo_kd = 1.07, 
-       #tmmae_her2_kd = 10, 
-       #herref = 0.1, 
-       #dose = NULL, 
-       #fu = 0.75)
+  # example additional scenarios:
+  # list(
+  #   name = "FU = 0.5, Lip = 3.0, SC = 0.015",
+  #   fu = 0.5,
+  #   lipophilicity = 3.0,
+  #   specific_clearance = 0.015
+  # ),
+  # list(
+  #   name = "FU = 0.7, Lip = 2.5, SC = 0.03",
+  #   fu = 0.7,
+  #   lipophilicity = 2.5,
+  #   specific_clearance = 0.03
+  # )
 )
 
 # ==========================
@@ -256,14 +251,13 @@ for (scn in scenarios) {
   
   apply_changes(
     sim,
-    fcrn_endo_kd  = scn$fcrn_endo_kd,
-    tmmae_her2_kd = scn$tmmae_her2_kd,
-    herref        = scn$herref,
-    dose          = scn$dose,
-    fu            = scn$fu
+    fu = scn$fu,
+    lipophilicity = scn$lipophilicity,
+    specific_clearance = scn$specific_clearance
   )
   
   res <- runSimulations(sim)[[1]]
+  
   sim_vals <- getOutputValues(res, quantitiesOrPaths = out_path)
   cat("Max simulated time stored (min):", max(sim_vals$data$Time, na.rm = TRUE), "\n")
   cat("Requested AUC end time (min):", last_obs_time_h * 60, "\n")
@@ -293,19 +287,6 @@ print(scenario_pk)
 # =========================
 # GMFE
 # =========================
-
-gmfe <- function(pred, obs) {
-  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
-  if (!any(ok)) stop("No valid positive observed/predicted pairs for GMFE.")
-  10^(mean(abs(log10(pred[ok] / obs[ok]))))
-}
-
-fold_error <- function(pred, obs) {
-  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
-  out <- rep(NA_real_, length(pred))
-  out[ok] <- 10^(abs(log10(pred[ok] / obs[ok])))
-  out
-}
 
 gmfe_tables <- list()
 
