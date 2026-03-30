@@ -199,9 +199,9 @@ get_sim_auc_last_obs_window <- function(sim_results, output_path, end_time_h) {
 scenarios <- list(
   list(
     name = "FU = 0.6, Lip = 2.7, SC = 0.02",
-    fu = 0.5,
-    lipophilicity = 2.75,
-    specific_clearance = 0.028
+    fu = 0.83,
+    lipophilicity = 3,
+    specific_clearance = 0.0255
   )
   
   # example additional scenarios:
