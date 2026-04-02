@@ -1,7 +1,7 @@
 library(ospsuite)
-library(ggplot2)
 
 rm(list = ls())
+options(width = 140)
 
 # --- paths ---
 sim_path <- "~/Desktop/Thesis/TMMAE/Mouse1 ADC i.v. 10 mg_kg.pkml"
@@ -13,47 +13,8 @@ obs_data <- loadDataSetFromPKML(filePath = dataset_path)
 print(obs_data)
 
 # =========================
-# baseline sensitivity analysis
+# helper functions
 # =========================
-
-sim_sa <- loadSimulation(sim_path)
-setOutputs(out_path, sim_sa)
-#potentialSAParameters <- potentialVariableParameterPathsFor(sim_sa)
-#print(potentialSAParameters)
-
-sa_parameter_paths <- c(
-  "**|TMMAE|Kd (FcRn) in Endosomal Space",
-  "TMMAE-HER2-Chang et al|Kd",
-  "HER2|Reference concentration",
-  "TMMAE|Fraction unbound (plasma, reference value)"
-)
-
-sa <- SensitivityAnalysis$new(
-  simulation = sim_sa,
-  parameterPaths = sa_parameter_paths,
-  variationRange = 0.1,
-  numberOfSteps = 2
-)
-
-sa_result <- runSensitivityAnalysis(sa)
-
-sens_cmax <- sa_result$allPKParameterSensitivitiesFor(
-  pkParameterName = "C_max",
-  outputPath = out_path,
-  totalSensitivityThreshold = 1
-)
-
-sens_auc <- sa_result$allPKParameterSensitivitiesFor(
-  pkParameterName = "AUC_tEnd",
-  outputPath = out_path,
-  totalSensitivityThreshold = 1
-)
-
-sens_cl <- sa_result$allPKParameterSensitivitiesFor(
-  pkParameterName = "CL",
-  outputPath = out_path,
-  totalSensitivityThreshold = 1
-)
 
 to_df <- function(x, pk_name) {
   if (length(x) == 0) {
@@ -72,19 +33,6 @@ to_df <- function(x, pk_name) {
     stringsAsFactors = FALSE
   )
 }
-
-sa_df <- rbind(
-  to_df(sens_cmax, "C_max"),
-  to_df(sens_auc, "AUC_last_obsWindow"),
-  to_df(sens_cl, "CL")
-)
-
-sa_df <- sa_df[order(sa_df$PK_Parameter, -abs(sa_df$Sensitivity)), ]
-print(sa_df)
-
-# =========================
-# helper functions
-# =========================
 
 apply_changes <- function(sim,
                           fcrn_endo_kd = NULL,
@@ -124,23 +72,12 @@ apply_changes <- function(sim,
   invisible(sim)
 }
 
-gmfe <- function(pred, obs) {
-  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
-  if (!any(ok)) stop("No valid positive observed/predicted pairs for GMFE.")
-  10^(mean(abs(log10(pred[ok] / obs[ok]))))
-}
-
-get_last_obs_time <- function(obs_data) {
+get_last_obs_time_h <- function(obs_data) {
   obs_df <- dataSetToDataFrame(obs_data)
   max(obs_df$xValues, na.rm = TRUE)
 }
 
-get_obs_cmax <- function(obs_data) {
-  obs_df <- dataSetToDataFrame(obs_data)
-  max(obs_df$yValues, na.rm = TRUE)
-}
-
-get_obs_auc_last_obs_window <- function(obs_data) {
+get_obs_auc_to_last_obs <- function(obs_data) {
   obs_df <- dataSetToDataFrame(obs_data)
   obs_df <- obs_df[order(obs_df$xValues), ]
   
@@ -151,13 +88,26 @@ get_obs_auc_last_obs_window <- function(obs_data) {
   x <- x[keep]
   y <- y[keep]
   
-  # trapezoidal AUC in µmol*h/l
+  # Assumes xValues are in hours and yValues are in µmol/l
+  # Trapezoidal AUC first in µmol*h/l, then converted to µmol*min/l
   auc_h <- sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
-  
-  # convert to µmol*min/l to match OSP PK analysis output
   auc_min <- auc_h * 60
   
   auc_min
+}
+
+define_auc_to_last_obs_parameter <- function(end_time_h) {
+  removeAllUserDefinedPKParameters()
+  
+  auc_to_last_obs <- addUserDefinedPKParameter(
+    name = "AUC_to_lastObs",
+    standardPKParameter = StandardPKParameter$AUC_tEnd
+  )
+  
+  auc_to_last_obs$startTime <- 0
+  auc_to_last_obs$endTime <- end_time_h * 60
+  
+  invisible(auc_to_last_obs)
 }
 
 get_sim_pk_value <- function(sim_results, output_path, parameter_name) {
@@ -173,35 +123,67 @@ get_sim_pk_value <- function(sim_results, output_path, parameter_name) {
   row$Value[[1]]
 }
 
-get_sim_auc_last_obs_window <- function(sim_results, output_path, end_time_h) {
-  removeAllUserDefinedPKParameters()
-  
-  auc_obs_window <- addUserDefinedPKParameter(
-    name = "AUC_last_obsWindow",
-    standardPKParameter = StandardPKParameter$AUC_tEnd
-  )
-  
-  auc_obs_window$startTime <- 0
-  auc_obs_window$endTime <- end_time_h *60
-  
-  pk <- calculatePKAnalyses(results = sim_results)
-  pk_df <- pkAnalysesToDataFrame(pk)
-  
-  row <- pk_df[pk_df$QuantityPath == output_path & pk_df$Parameter == "AUC_last_obsWindow", ]
-  
-  if (nrow(row) == 0) {
-    stop("User-defined parameter AUC_last_obsWindow was not found in PK analysis output.")
-  }
-  
-  row$Value[[1]]
+fold_error <- function(pred, obs) {
+  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
+  out <- rep(NA_real_, length(pred))
+  out[ok] <- 10^(abs(log10(pred[ok] / obs[ok])))
+  out
 }
+
+# =========================
+# baseline sensitivity analysis
+# =========================
+# Sensitivity analysis uses standard PK parameters available in the SA output.
+
+sim_sa <- loadSimulation(sim_path)
+setOutputs(out_path, sim_sa)
+
+sa_parameter_paths <- c(
+  "**|TMMAE|Kd (FcRn) in Endosomal Space",
+  "TMMAE-HER2-Chang et al|Kd",
+  "HER2|Reference concentration",
+  "TMMAE|Fraction unbound (plasma, reference value)"
+)
+
+sa <- SensitivityAnalysis$new(
+  simulation = sim_sa,
+  parameterPaths = sa_parameter_paths,
+  variationRange = 0.1,
+  numberOfSteps = 2
+)
+
+sa_result <- runSensitivityAnalysis(sa)
+
+sens_auc_tend <- sa_result$allPKParameterSensitivitiesFor(
+  pkParameterName = "AUC_tEnd",
+  outputPath = out_path,
+  totalSensitivityThreshold = 1
+)
+
+sens_cl <- sa_result$allPKParameterSensitivitiesFor(
+  pkParameterName = "CL",
+  outputPath = out_path,
+  totalSensitivityThreshold = 1
+)
+
+sa_df <- rbind(
+  to_df(sens_auc_tend, "AUC_tEnd"),
+  to_df(sens_cl, "CL")
+)
+
+sa_df <- sa_df[order(sa_df$PK_Parameter, -abs(sa_df$Sensitivity)), ]
+
+cat("\nSensitivity summary:\n")
+print(sa_df, row.names = FALSE)
+
 # =========================
 # scenarios
 # =========================
 
 scenarios <- list(
   list(
-    name = "FcRnKd: 1.07 μmol/l, HER2Kd: 6 μmol/l, HER2 ref: 0.5 μmol/l, fu = 0.25",
+    id = "S1",
+    label = "FcRnKd: 1.07 µmol/l, HER2Kd: 1 µmol/l, HER2 ref: 0.7 µmol/l",
     fcrn_endo_kd = 1.07,
     tmmae_her2_kd = 1,
     herref = 0.7,
@@ -209,32 +191,40 @@ scenarios <- list(
     fu = NULL
   )
   
-   #list(name = "FcRnKd: 1.07 μmol/l, HER2Kd: 8 μmol/l, HER2 ref: 0.25 μmol/l, fu = 0.5", 
-        #fcrn_endo_kd = 1.07,
-        #tmmae_her2_kd = 8,
-        #herref = 0.25, 
-        #dose = NULL,
-        #fu = 0.5),
-  
-  #list(name = "FcRnKd: 1.07 μmol/l, HER2Kd: 10 μmol/l, HER2 ref: 0.1 μmol/l, fu = 0.75", 
-       #fcrn_endo_kd = 1.07, 
-       #tmmae_her2_kd = 10, 
-       #herref = 0.1, 
-       #dose = NULL, 
-       #fu = 0.75)
+  # ,
+  # list(
+  #   id = "S2",
+  #   label = "FcRnKd: 1.07 µmol/l, HER2Kd: 8 µmol/l, HER2 ref: 0.25 µmol/l, fu: 0.5",
+  #   fcrn_endo_kd = 1.07,
+  #   tmmae_her2_kd = 8,
+  #   herref = 0.25,
+  #   dose = NULL,
+  #   fu = 0.5
+  # ),
+  #
+  # list(
+  #   id = "S3",
+  #   label = "FcRnKd: 1.07 µmol/l, HER2Kd: 10 µmol/l, HER2 ref: 0.1 µmol/l, fu: 0.75",
+  #   fcrn_endo_kd = 1.07,
+  #   tmmae_her2_kd = 10,
+  #   herref = 0.1,
+  #   dose = NULL,
+  #   fu = 0.75
+  # )
 )
 
 # ==========================
-# observed reference metrics
+# observed reference metric
 # ==========================
 
-last_obs_time_h <- get_last_obs_time(obs_data)
-obs_cmax <- get_obs_cmax(obs_data)
-obs_auc_last_obs_window <- get_obs_auc_last_obs_window(obs_data)
+last_obs_time_h <- get_last_obs_time_h(obs_data)
+obs_auc_to_last_obs <- get_obs_auc_to_last_obs(obs_data)
 
-cat("Last observed time (h):", last_obs_time_h, "\n")
-cat("Observed Cmax:", obs_cmax, "\n")
-cat("Observed AUC_last_obsWindow (µmol*min/l):", obs_auc_last_obs_window, "\n")
+define_auc_to_last_obs_parameter(last_obs_time_h)
+
+cat("\nObserved reference:\n")
+cat("Last observed time (h):", round(last_obs_time_h, 3), "\n")
+cat("Observed AUC_to_lastObs (µmol*min/l):", round(obs_auc_to_last_obs, 3), "\n")
 
 # =================================
 # combined plot + scenario PK table
@@ -243,14 +233,12 @@ cat("Observed AUC_last_obsWindow (µmol*min/l):", obs_auc_last_obs_window, "\n")
 dc <- DataCombined$new()
 dc$addDataSets(obs_data)
 
-scenario_pk <- data.frame(
-  Scenario = character(),
-  C_max = numeric(),
-  AUC_last_obsWindow = numeric(),
-  stringsAsFactors = FALSE
-)
+scenario_pk_list <- vector("list", length(scenarios))
+scenario_lookup_list <- vector("list", length(scenarios))
 
-for (scn in scenarios) {
+for (i in seq_along(scenarios)) {
+  scn <- scenarios[[i]]
+  
   sim <- loadSimulation(sim_path)
   setOutputs(out_path, sim)
   
@@ -264,85 +252,57 @@ for (scn in scenarios) {
   )
   
   res <- runSimulations(sim)[[1]]
-  sim_vals <- getOutputValues(res, quantitiesOrPaths = out_path)
-  cat("Max simulated time stored (min):", max(sim_vals$data$Time, na.rm = TRUE), "\n")
-  cat("Requested AUC end time (min):", last_obs_time_h * 60, "\n")
   
-  sim_cmax <- get_sim_pk_value(res, out_path, "C_max")
-  sim_auc_last_obs_window <- get_sim_auc_last_obs_window(res, out_path, last_obs_time_h)
+  sim_auc_to_last_obs <- get_sim_pk_value(res, out_path, "AUC_to_lastObs")
   
-  scenario_pk <- rbind(
-    scenario_pk,
-    data.frame(
-      Scenario = scn$name,
-      C_max = sim_cmax,
-      AUC_last_obsWindow = sim_auc_last_obs_window,
-      stringsAsFactors = FALSE
-    )
+  scenario_pk_list[[i]] <- data.frame(
+    Scenario = scn$id,
+    AUC_to_lastObs = sim_auc_to_last_obs,
+    stringsAsFactors = FALSE
+  )
+  
+  scenario_lookup_list[[i]] <- data.frame(
+    Scenario = scn$id,
+    Description = scn$label,
+    stringsAsFactors = FALSE
   )
   
   dc$addSimulationResults(
     simulationResults = res,
     quantitiesOrPaths = out_path,
-    names = scn$name
+    names = scn$id
   )
 }
 
-print(scenario_pk)
+scenario_pk <- do.call(rbind, scenario_pk_list)
+scenario_lookup <- do.call(rbind, scenario_lookup_list)
 
 # =========================
-# GMFE
+# error analysis
 # =========================
 
-gmfe <- function(pred, obs) {
-  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
-  if (!any(ok)) stop("No valid positive observed/predicted pairs for GMFE.")
-  10^(mean(abs(log10(pred[ok] / obs[ok]))))
-}
+error_summary <- data.frame(
+  Scenario = scenario_pk$Scenario,
+  Observed_AUC_to_lastObs = round(rep(obs_auc_to_last_obs, nrow(scenario_pk)), 3),
+  Predicted_AUC_to_lastObs = round(scenario_pk$AUC_to_lastObs, 3),
+  Fold_Error = round(fold_error(scenario_pk$AUC_to_lastObs, obs_auc_to_last_obs), 3),
+  stringsAsFactors = FALSE
+)
 
-fold_error <- function(pred, obs) {
-  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
-  out <- rep(NA_real_, length(pred))
-  out[ok] <- 10^(abs(log10(pred[ok] / obs[ok])))
-  out
-}
+cat("\nScenario lookup:\n")
+print(scenario_lookup, row.names = FALSE)
 
-gmfe_tables <- list()
+cat("\nScenario PK summary:\n")
+print(
+  transform(
+    scenario_pk,
+    AUC_to_lastObs = round(AUC_to_lastObs, 3)
+  ),
+  row.names = FALSE
+)
 
-for (i in seq_len(nrow(scenario_pk))) {
-  
-  pred_cmax <- scenario_pk$C_max[i]
-  pred_auc  <- scenario_pk$AUC_last_obsWindow[i]
-  
-  result_table <- data.frame(
-    Parameter = c("C_max", "AUC_last_obsWindow"),
-    Observed = c(obs_cmax, obs_auc_last_obs_window),
-    Predicted = c(pred_cmax, pred_auc),
-    Fold_Error = c(
-      fold_error(pred_cmax, obs_cmax),
-      fold_error(pred_auc, obs_auc_last_obs_window)
-    ),
-    stringsAsFactors = FALSE
-  )
-  
-  overall_gmfe <- gmfe(
-    pred = result_table$Predicted,
-    obs  = result_table$Observed
-  )
-  
-  gmfe_tables[[scenario_pk$Scenario[i]]] <- list(
-    table = result_table,
-    overall_gmfe = overall_gmfe
-  )
-}
-
-for (scn_name in names(gmfe_tables)) {
-  cat("\n=============================\n")
-  cat("Scenario:", scn_name, "\n")
-  cat("=============================\n")
-  print(gmfe_tables[[scn_name]]$table, row.names = FALSE)
-  cat("\nOverall GMFE:", gmfe_tables[[scn_name]]$overall_gmfe, "\n")
-}
+cat("\nError summary:\n")
+print(error_summary, row.names = FALSE)
 
 # =========================
 # plot
