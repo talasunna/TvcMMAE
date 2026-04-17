@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<McDataRepository id="e26a34b6-4c87-4c18-a94e-979549ea4138" name="Chang et al.PK_observed.IV__10mgKg_ADC_Mouse" icon="ObservedData" configurationId="1e524b1b-f9e4-4dc1-8658-5af7cbb69f21" version="18">
+  <Columns>
+    <McBaseGrid id="a66735bf-3110-4b97-b046-4d6744b0c909" name="Time" dimension="Time" isInternal="0" baseGrid="a66735bf-3110-4b97-b046-4d6744b0c909">
+      <DataInfo origin="BaseGrid" auxiliaryType="Undefined" displayUnitName="h" />
+      <QuantityInfo type="Time" orderIndex="0" Path="Chang et al.PK_observed.IV__10mgKg_ADC_Mouse|Time" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAAAUAAAALtq+xQPMDukO2r7FEAACHRXHRHUYL</Values>
+      <RelatedColumnsCache />
+    </McBaseGrid>
+    <McDataColumn id="e685174d-65fc-46fd-b170-81d8f464f88a" name="Measurement" dimension="Concentration (molar)" isInternal="0" baseGrid="a66735bf-3110-4b97-b046-4d6744b0c909">
+      <DataInfo origin="Observation" auxiliaryType="Undefined" displayUnitName="µmol/l" molWeight="0.000155" />
+      <QuantityInfo type="Undefined" orderIndex="0" Path="Chang et al.PK_observed.IV__10mgKg_ADC_Mouse|ObservedData|VenousBlood|Plasma|TMMAE|Measurement" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAAAUAAAALOf7dPzEasz+Z6FQ/3GNZP9YYPD8L</Values>
+      <RelatedColumnsCache />
+    </McDataColumn>
+  </Columns>
+  <ExtendedProperties>
+    <StringExtendedProperty name="Sheet" readOnly="0" value="PK_observed" />
+    <StringExtendedProperty name="Dose" readOnly="0" value="IV__10mgKg_ADC_Mouse" />
+    <StringExtendedProperty name="Molecule" readOnly="0" value="TMMAE" />
+    <StringExtendedProperty name="Species" readOnly="0" value="Mouse" />
+    <StringExtendedProperty name="Organ" readOnly="0" value="VenousBlood" />
+    <StringExtendedProperty name="Compartment" readOnly="0" value="Plasma" />
+  </ExtendedProperties>
+</McDataRepository>
