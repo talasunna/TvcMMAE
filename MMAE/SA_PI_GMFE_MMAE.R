@@ -170,7 +170,7 @@ print(sa_df, row.names = FALSE)
 scenarios <- list(
   list(
     id = "S1",
-    label = "FU = 0.83, Lip = 3, SC = 0.0255",
+    label = "FU = 0.83, Lip = 3, SC = 0.006 ",
     fu = 0.83,
     lipophilicity = 3,
     specific_clearance = 0.0255
@@ -179,7 +179,7 @@ scenarios <- list(
   # ,
   # list(
   #   id = "S2",
-  #   label = "FU = 0.5, Lip = 3.0, SC = 0.015",
+  #   label = "FU = 0.5, Lip = 3.0, SC = 0.0255",
   #   fu = 0.5,
   #   lipophilicity = 3.0,
   #   specific_clearance = 0.015
