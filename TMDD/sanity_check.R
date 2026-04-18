@@ -7,7 +7,7 @@ options(width = 140)
 # file paths
 # -------------------------
 pksim_path   <- "~/Desktop/Thesis/Mouse TvcMMAE i.v. 10 mg_kg.pkml"
-mobi_path    <- "~/Desktop/Thesis/TMDD/mouse TvcMMAE i.v. 10 mg_kg with TMDD and Tumor.pkml"
+mobi_path    <- "~/Desktop/Thesis/TMDD/Mouse TvcMMAE i.v. 10 mg_kg with TMDD and Tumor.pkml"
 dataset_path <- "~/Desktop/Thesis/TMMAE/Chang_et_al.PK_observed.IV__10mgKg_ADC_Mouse.pkml"
 
 # output path
