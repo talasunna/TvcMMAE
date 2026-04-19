@@ -11,35 +11,35 @@ mobi_path <- "~/Desktop/Thesis/TMDD/Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.p
 include_observed <- FALSE
 dataset_path <- "~/Desktop/Thesis/TvcMMAE/Chang_et_al.PK_observed.IV__10mgKg_ADC_Mouse.pkml"
 
-plot_title <- "Plasma TvcMMAE Concentration-Time Profiles"
+plot_title <- "HER2 Concentration with TMDD"
 obs_label <- "Observed data"
 obs_color <- "orange"
 obs_shape <- 16
 
 curve_spec <- data.frame(
   sim_path = c(
-    "Organism|Tumor|Interstitial|HER2|Concentration"
-    #"Organism|Tumor|Interstitial|TvcMMAE|Concentration in container"
+    "Organism|Tumor|Interstitial|HER2|Concentration in container"
+    #"Organism|Tumor|Interstitial|TvcMMAE|Concentration in container",
     #"Organism|Tumor|Intracellular|TvcMMAE|Concentration in container"
     #"Organism|Tumor|Interstitial|nAb|Concentration in container"
     
   ),
   label = c(
-    "Plasma TvcMMAE"
-    #"Tumor interstitial TvcMMAE"
+    "HER2 Concentration"
+    #"Tumor interstitial TvcMMAE",
     #"Tumor intracellular TvcMMAE"
     #"Tumor interstitial nAb"
     
   ),
   color = c(
     "red"
-    #"blue"
-    #"blue"
+    #"blue",
+    #"green"
     #"pink"
   ),
   linewidth = c(
     0.8
-    #0.8
+    #0.8,
     #0.8
     #0.8
   ),
@@ -140,7 +140,7 @@ make_time_profile_plot <- function(
     x_unit = ospUnits$Time$h,
     y_scale = "log"
 ) {
-  base_plot <- plotTimeProfile(
+  base_plot <- ospsuite::plotTimeProfile(
     plotData = plot_data,
     xUnit = x_unit,
     yScale = y_scale,
