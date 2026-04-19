@@ -1,4 +1,5 @@
 library(ospsuite)
+library(ospsuite.reportingengine)
 library(ggplot2)
 
 rm(list = ls())
@@ -153,10 +154,32 @@ get_sim_pk_value <- function(sim_results, output_path, parameter_name) {
   row$Value[[1]]
 }
 
-fold_error <- function(pred, obs) {
-  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
+calculate_scenario_gmfe <- function(pred, obs) {
+  pred <- as.numeric(pred)
+  obs <- as.numeric(obs)
+  
+  if (length(pred) == 1 && length(obs) > 1) {
+    pred <- rep(pred, length(obs))
+  } else if (length(obs) == 1 && length(pred) > 1) {
+    obs <- rep(obs, length(pred))
+  } else if (length(pred) != length(obs)) {
+    stop("`pred` and `obs` must have the same length, or one must have length 1.")
+  }
+  
   out <- rep(NA_real_, length(pred))
-  out[ok] <- 10^(abs(log10(pred[ok] / obs[ok])))
+  ok <- is.finite(pred) & is.finite(obs) & pred > 0 & obs > 0
+  
+  out[ok] <- vapply(
+    seq_along(pred[ok]),
+    \(i) {
+      ospsuite.reportingengine::calculateGMFE(
+        x = pred[ok][i],
+        y = obs[ok][i]
+      )
+    },
+    numeric(1)
+  )
+  
   out
 }
 
@@ -167,10 +190,12 @@ build_legend_spec <- function(
     obs_color = "orange",
     obs_shape = 16
 ) {
-  color_values <- stats::setNames(curve_spec$color, curve_spec$label)
-  linetype_values <- stats::setNames(curve_spec$linetype, curve_spec$label)
-  linewidth_values <- stats::setNames(curve_spec$linewidth, curve_spec$label)
-  shape_values <- stats::setNames(rep(NA, nrow(curve_spec)), curve_spec$label)
+  color_values <- stats::setNames(curve_spec$color, curve_spec$name)
+  linetype_values <- stats::setNames(curve_spec$linetype, curve_spec$name)
+  linewidth_values <- stats::setNames(curve_spec$linewidth, curve_spec$name)
+  shape_values <- stats::setNames(rep(NA, nrow(curve_spec)), curve_spec$name)
+  
+  label_lookup <- stats::setNames(curve_spec$label, curve_spec$name)
   
   if (include_observed) {
     color_values <- c(
@@ -189,13 +214,18 @@ build_legend_spec <- function(
       shape_values,
       stats::setNames(obs_shape, obs_label)
     )
-    legend_order <- c(curve_spec$label, obs_label)
+    label_lookup <- c(
+      label_lookup,
+      stats::setNames(obs_label, obs_label)
+    )
+    legend_order <- c(curve_spec$name, obs_label)
   } else {
-    legend_order <- curve_spec$label
+    legend_order <- curve_spec$name
   }
   
   list(
     order = legend_order,
+    labels = unname(label_lookup[legend_order]),
     color_values = color_values,
     linetype_values = linetype_values,
     linewidth_values = linewidth_values,
@@ -214,7 +244,7 @@ make_scenario_plot <- function(
     y_axis_label = "Concentration [\u03bcmol/l]",
     legend_position = "right"
 ) {
-  base_plot <- plotTimeProfile(
+  base_plot <- ospsuite::plotTimeProfile(
     plotData = plot_data,
     xUnit = x_unit,
     yScale = y_scale,
@@ -234,19 +264,23 @@ make_scenario_plot <- function(
   base_plot +
     scale_color_manual(
       values = legend_spec$color_values,
-      breaks = legend_spec$order
+      breaks = legend_spec$order,
+      labels = legend_spec$labels
     ) +
     scale_linetype_manual(
       values = legend_spec$linetype_values,
-      breaks = legend_spec$order
+      breaks = legend_spec$order,
+      labels = legend_spec$labels
     ) +
     scale_linewidth_manual(
       values = legend_spec$linewidth_values,
-      breaks = legend_spec$order
+      breaks = legend_spec$order,
+      labels = legend_spec$labels
     ) +
     scale_shape_manual(
       values = legend_spec$shape_values,
-      breaks = legend_spec$order
+      breaks = legend_spec$order,
+      labels = legend_spec$labels
     ) +
     labs(
       title = title,
@@ -284,7 +318,7 @@ setOutputs(out_path, sim_sa)
 
 sa_parameter_paths <- c(
   "**|TvcMMAE|Kd (FcRn) in Endosomal Space",
-  "TvcMMAE-HER2-Chang et al|Kd",
+  "TvcMMAE-HER2-Chang et al.|Kd",
   "HER2|Reference concentration",
   "TvcMMAE|Fraction unbound (plasma, reference value)"
 )
@@ -427,6 +461,11 @@ scenario_lookup <- do.call(rbind, scenario_lookup_list)
 
 # Error analysis ----------------------------------------------------------
 
+scenario_gmfe <- calculate_scenario_gmfe(
+  pred = scenario_pk$auc_to_last_obs,
+  obs = obs_auc_to_last_obs
+)
+
 error_summary <- data.frame(
   scenario = scenario_pk$scenario,
   observed_auc_to_last_obs = round(
@@ -434,17 +473,14 @@ error_summary <- data.frame(
     3
   ),
   predicted_auc_to_last_obs = round(scenario_pk$auc_to_last_obs, 3),
-  fold_error = round(
-    fold_error(scenario_pk$auc_to_last_obs, obs_auc_to_last_obs),
-    3
-  ),
+  gmfe = round(scenario_gmfe, 3),
   stringsAsFactors = FALSE
 )
 
 scenario_legend_labels <- paste0(
   error_summary$scenario,
-  " (GMFE = ",
-  round(error_summary$fold_error, 2),
+  " (GMFE: ",
+  formatC(error_summary$gmfe, format = "f", digits = 2),
   ")"
 )
 
@@ -466,8 +502,8 @@ print(error_summary, row.names = FALSE)
 # Plot specification ------------------------------------------------------
 
 curve_spec <- data.frame(
-  sim_path = rep(out_path, length(scenarios)),
-  label = vapply(scenarios, \(x) x$id, character(1)),
+  name = vapply(scenarios, \(x) x$id, character(1)),
+  label = scenario_legend_labels,
   color = vapply(scenarios, \(x) x$color, character(1)),
   linewidth = vapply(scenarios, \(x) x$linewidth, numeric(1)),
   linetype = vapply(scenarios, \(x) x$linetype, character(1)),
