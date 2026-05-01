@@ -7,48 +7,73 @@ options(ospsuite.plots.watermarkEnabled = FALSE)
 # User inputs -------------------------------------------------------------
 
 mobi_path <- "~/Desktop/Thesis/TMDD/Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml"
+include_observed <- TRUE
 
-include_observed <- FALSE
-dataset_path <- "~/Desktop/Thesis/TvcMMAE/Chang_et_al.PK_observed.IV__10mgKg_ADC_Mouse.pkml"
-
-plot_title <- "HER2 Concentration with TMDD"
-obs_label <- "Observed data"
-obs_color <- "orange"
-obs_shape <- 16
-
-curve_spec <- data.frame(
-  sim_path = c(
-    "Organism|Tumor|Interstitial|HER2|Concentration in container"
-    #"Organism|Tumor|Interstitial|TvcMMAE|Concentration in container",
-    #"Organism|Tumor|Intracellular|TvcMMAE|Concentration in container"
-    #"Organism|Tumor|Interstitial|nAb|Concentration in container"
+observed_spec <- data.frame(
+  dataset_path = c(
+    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.FreeMMAE.pkml"
+    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.conjMMAE.pkml"
+    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.totalMMAE.pkml"
+    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.TvcMMAE.pkml"
+    #"~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.freeMMAE.tumor.pkml"
+    #"~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.conjMMAE.tumor.pkml"
+    #"~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.totalMMAE.tumor.pkml"
+    "~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.TvcMMAE.tumor.pkml"
+    
     
   ),
   label = c(
-    "HER2 Concentration"
-    #"Tumor interstitial TvcMMAE",
-    #"Tumor intracellular TvcMMAE"
-    #"Tumor interstitial nAb"
+    #"Observed Free MMAE in Tumor"
+    #"Observed Conjugated MMAE in Tumor"
+    #"Observed Total MMAE in Tumor"
+    "Observed Total mAb in Tumor"
+  ),
+  color = c(
+    "#0072B2"
+    #"darkgreen"
+    #"red"
+  ),
+  shape = c(
+    16
+    #17,
+    #18
+  ),
+  stringsAsFactors = FALSE
+)
+
+plot_title <- "Total mAb Concentration in Tumor vs. Time"
+
+curve_spec <- data.frame(
+  sim_path = c(
+    #"Organism|Tumor|MMAE|freeMMAEtumor"
+    #"Organism|Tumor|TvcMMAE|conjugatedMMAEtumor"
+    #"Organism|Tumor|MMAE|totalMMAEtumor"
+    "Organism|Tumor|nAb|totalmAbtumor"
+    
+    
+    
+  ),
+  label = c(
+    #"Free MMAE Concentration in Tumor"
+    #"Conjugated MMAE in Tumor"
+    #"Total MMAE in Tumor"
+    "Total mAb in Tumor"
     
   ),
   color = c(
-    "red"
-    #"blue",
-    #"green"
-    #"pink"
+    "#E69F00" 
+    #"darkgreen"
+    #"red"
   ),
   linewidth = c(
     0.8
-    #0.8,
     #0.8
     #0.8
   ),
   linetype = c(
     "solid"
-    #"solid"
-    #"solid"
-    #"solid"
-    
+    #"dashed"
+    #"dashed"
   ),
   stringsAsFactors = FALSE
 )
@@ -60,10 +85,16 @@ load_simulation_results <- function(file_path) {
   runSimulations(simulation)[[1]]
 }
 
-load_observed_data <- function(file_path, label) {
-  data_set <- loadDataSetFromPKML(filePath = file_path)
-  data_set$name <- label
-  data_set
+load_observed_data <- function(observed_spec) {
+  observed_data <- vector("list", nrow(observed_spec))
+  
+  for (i in seq_len(nrow(observed_spec))) {
+    data_set <- loadDataSetFromPKML(filePath = observed_spec$dataset_path[i])
+    data_set$name <- observed_spec$label[i]
+    observed_data[[i]] <- data_set
+  }
+  
+  observed_data
 }
 
 build_plot_data <- function(
@@ -82,7 +113,7 @@ build_plot_data <- function(
     )
   }
   
-  if (include_observed) {
+  if (include_observed && length(observed_data) > 0) {
     plot_data$addDataSets(observed_data)
   }
   
@@ -91,36 +122,34 @@ build_plot_data <- function(
 
 build_legend_spec <- function(
     curve_spec,
-    include_observed = FALSE,
-    obs_label = "Observed data",
-    obs_color = "red",
-    obs_shape = 16
+    observed_spec = NULL,
+    include_observed = FALSE
 ) {
   color_values <- stats::setNames(curve_spec$color, curve_spec$label)
   linetype_values <- stats::setNames(curve_spec$linetype, curve_spec$label)
   linewidth_values <- stats::setNames(curve_spec$linewidth, curve_spec$label)
   shape_values <- stats::setNames(rep(NA, nrow(curve_spec)), curve_spec$label)
   
-  if (include_observed) {
-    color_values <- c(
-      color_values,
-      stats::setNames(obs_color, obs_label)
+  legend_order <- curve_spec$label
+  
+  if (include_observed && !is.null(observed_spec) && nrow(observed_spec) > 0) {
+    obs_color_values <- stats::setNames(observed_spec$color, observed_spec$label)
+    obs_linetype_values <- stats::setNames(
+      rep("blank", nrow(observed_spec)),
+      observed_spec$label
     )
-    linetype_values <- c(
-      linetype_values,
-      stats::setNames("blank", obs_label)
+    obs_linewidth_values <- stats::setNames(
+      rep(0, nrow(observed_spec)),
+      observed_spec$label
     )
-    linewidth_values <- c(
-      linewidth_values,
-      stats::setNames(0, obs_label)
-    )
-    shape_values <- c(
-      shape_values,
-      stats::setNames(obs_shape, obs_label)
-    )
-    legend_order <- c(curve_spec$label, obs_label)
-  } else {
-    legend_order <- curve_spec$label
+    obs_shape_values <- stats::setNames(observed_spec$shape, observed_spec$label)
+    
+    color_values <- c(color_values, obs_color_values)
+    linetype_values <- c(linetype_values, obs_linetype_values)
+    linewidth_values <- c(linewidth_values, obs_linewidth_values)
+    shape_values <- c(shape_values, obs_shape_values)
+    
+    legend_order <- c(curve_spec$label, observed_spec$label)
   }
   
   list(
@@ -154,7 +183,7 @@ make_time_profile_plot <- function(
     } else {
       NULL
     },
-    showLegendPerDataset = "all"
+    showLegendPerDataset = "observed"
   )
   
   base_plot +
@@ -195,11 +224,14 @@ make_time_profile_plot <- function(
         )
       )
     ) +
-    theme_bw() +
+    theme_bw(base_size = 12) +
     theme(
       plot.title = element_text(hjust = 0.5),
-      legend.position = "right",
-      legend.title = element_blank()
+      legend.position = c(0.60, 0.40),
+      legend.justification = c(0, 1),
+      legend.title = element_blank(),
+      legend.background = element_rect(fill = "white", color = "grey70"),
+      legend.key = element_rect(fill = "white", color = NA)
     )
 }
 
@@ -208,10 +240,7 @@ plot_pk_profile <- function(
     curve_spec,
     plot_title,
     include_observed = FALSE,
-    dataset_path = NULL,
-    obs_label = "Observed data",
-    obs_color = "red",
-    obs_shape = 16,
+    observed_spec = NULL,
     x_unit = ospUnits$Time$h,
     y_scale = "log"
 ) {
@@ -219,7 +248,7 @@ plot_pk_profile <- function(
   
   observed_data <- NULL
   if (include_observed) {
-    observed_data <- load_observed_data(dataset_path, obs_label)
+    observed_data <- load_observed_data(observed_spec)
   }
   
   plot_data <- build_plot_data(
@@ -231,10 +260,8 @@ plot_pk_profile <- function(
   
   legend_spec <- build_legend_spec(
     curve_spec = curve_spec,
-    include_observed = include_observed,
-    obs_label = obs_label,
-    obs_color = obs_color,
-    obs_shape = obs_shape
+    observed_spec = observed_spec,
+    include_observed = include_observed
   )
   
   make_time_profile_plot(
@@ -254,10 +281,7 @@ p <- plot_pk_profile(
   curve_spec = curve_spec,
   plot_title = plot_title,
   include_observed = include_observed,
-  dataset_path = dataset_path,
-  obs_label = obs_label,
-  obs_color = obs_color,
-  obs_shape = obs_shape
+  observed_spec = observed_spec
 )
 
 print(p)
