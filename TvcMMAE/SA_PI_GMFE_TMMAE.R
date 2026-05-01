@@ -9,9 +9,9 @@ options(ospsuite.plots.watermarkEnabled = FALSE)
 
 # Paths -------------------------------------------------------------------
 
-sim_path <- "~/Desktop/Thesis/TvcMMAE/Mouse TvcMMAE i.v. 10 mg_kg.pkml"
+sim_path <- "~/Desktop/Thesis/TMDD/Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml"
 out_path <- "Organism|VenousBlood|Plasma|TvcMMAE|Concentration"
-dataset_path <- "~/Desktop/Thesis/TvcMMAE/Chang_et_al.PK_observed.IV__10mgKg_ADC_Mouse.pkml"
+dataset_path <- "~/Desktop/Thesis/Datasets/Observed_data/Chang et al.TvcMMAE.pkml"
 
 # Plot options ------------------------------------------------------------
 
