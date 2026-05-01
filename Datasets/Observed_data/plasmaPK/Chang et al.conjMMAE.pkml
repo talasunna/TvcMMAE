@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<McDataRepository id="f4fe53b8-0fa9-4f0a-83ec-5650c48ea921" name="Chang et al.conjMMAE" icon="ObservedData" configurationId="73da8a72-972b-464a-b574-c87e4174472f" version="18">
+  <Columns>
+    <McBaseGrid id="4a80b937-eb59-407a-b10d-722bf7fd1805" name="Time" dimension="Time" isInternal="0" baseGrid="4a80b937-eb59-407a-b10d-722bf7fd1805">
+      <DataInfo origin="BaseGrid" auxiliaryType="Undefined" displayUnitName="h" />
+      <QuantityInfo type="Time" orderIndex="0" Path="Chang et al.conjMMAE|Time" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAAAUAAAALHftRQkG6vUPZt7dEnumHRfUqHkYL</Values>
+      <RelatedColumnsCache />
+    </McBaseGrid>
+    <McDataColumn id="793e0d87-d82e-427e-b597-4a5905091789" name="Measurement" dimension="Concentration (molar)" isInternal="0" baseGrid="4a80b937-eb59-407a-b10d-722bf7fd1805">
+      <DataInfo origin="Observation" auxiliaryType="Undefined" displayUnitName="µmol/l" />
+      <QuantityInfo type="Undefined" orderIndex="0" Path="Chang et al.conjMMAE|Measurement" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAAAUAAAALLaCDQGzKQUCd66Y/Guk0P+3anz4L</Values>
+      <RelatedColumnsCache />
+    </McDataColumn>
+  </Columns>
+  <ExtendedProperties>
+    <StringExtendedProperty name="Sheet" readOnly="0" value="conjMMAE" />
+    <StringExtendedProperty name="Dose" readOnly="0" value="IV__10mgKg_MMAE_Mouse" />
+    <StringExtendedProperty name="Organ" readOnly="0" value="VenousBlood" />
+    <StringExtendedProperty name="Compartment" readOnly="0" value="Plasma" />
+  </ExtendedProperties>
+</McDataRepository>

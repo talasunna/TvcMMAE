@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<McDataRepository id="e6a12e28-3d23-4e15-8c90-ce547e6d7dec" name="Chang et al.conjMMAE.tumor" icon="ObservedData" configurationId="b70c3d77-4ab1-4771-9b6e-eb7401c4f58a" version="18">
+  <Columns>
+    <McBaseGrid id="2e853fd6-83c4-427a-b6fc-0a4b1170b753" name="Time" dimension="Time" isInternal="0" baseGrid="2e853fd6-83c4-427a-b6fc-0a4b1170b753">
+      <DataInfo origin="BaseGrid" auxiliaryType="Undefined" displayUnitName="min" />
+      <QuantityInfo type="Time" orderIndex="0" Path="Chang et al.conjMMAE.tumor|Time" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAAAUAAAALAADAQaaOr0MbHWxEs6qGRSZDHUYL</Values>
+      <RelatedColumnsCache />
+    </McBaseGrid>
+    <McDataColumn id="9a869d9f-302b-4f57-a324-654c0042b76d" name="Measurement" dimension="Concentration (molar)" isInternal="0" baseGrid="2e853fd6-83c4-427a-b6fc-0a4b1170b753">
+      <DataInfo origin="Observation" auxiliaryType="Undefined" displayUnitName="µmol/l" />
+      <QuantityInfo type="Undefined" orderIndex="0" Path="Chang et al.conjMMAE.tumor|Measurement" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAAAUAAAALuaRGPdHYoD5tYcE+tJmYPgmP4D0L</Values>
+      <RelatedColumnsCache />
+    </McDataColumn>
+  </Columns>
+  <ExtendedProperties>
+    <StringExtendedProperty name="Sheet" readOnly="0" value="conjMMAE.tumor" />
+    <StringExtendedProperty name="Dose" readOnly="0" value="IV__10mgKg_MMAE_Mouse" />
+  </ExtendedProperties>
+</McDataRepository>
