@@ -1,0 +1,2 @@
+simulation_file,IndividualId,QuantityPath,Cmax_Value,Tmax_Value,AUCtend_Value,AUCtinf_Value,Thalf_Value,Cmax_Unit,Tmax_Unit,AUCtend_Unit,AUCtinf_Unit,Thalf_Unit
+Mouse MMAE 0.10 mg_kg.pkml,0,Organism|VenousBlood|Plasma|MMAE|Concentration in container,0.06979129,0.05,17.250717,21.458694,103.53335,µmol/l,h,µmol*min/l,µmol*min/l,h
