@@ -12,7 +12,11 @@ simulation_files <- c(
 output_paths <- c(
   "Organism|VenousBlood|Plasma|TvcMMAE|conjugatedMMAE",
   "Organism|VenousBlood|Plasma|nAb|totalmAb",
+  "Organism|VenousBlood|Plasma|MMAE|Concentration in container",
+  "Organism|VenousBlood|Plasma|MMAE|totalMMAE",
+  "Organism|Tumor|MMAE|freeMMAEtumor",
   "Organism|Tumor|TvcMMAE|conjugatedMMAEtumor",
+  "Organism|Tumor|MMAE|totalMMAEtumor",
   "Organism|Tumor|nAb|totalmAbtumor"
 )
 
