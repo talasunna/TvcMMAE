@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<McDataRepository id="8d7f8331-8acb-49ea-9f65-1e8e6796b3f4" name="Chang et al.TGI.1mgkg" icon="ObservedData" configurationId="86f0e576-c652-45e5-9935-3ac0336b03cb" version="18">
+  <Columns>
+    <McBaseGrid id="48f3efcf-eb97-4596-bcd7-9cfc900b01a4" name="Time" dimension="Time" isInternal="0" baseGrid="48f3efcf-eb97-4596-bcd7-9cfc900b01a4">
+      <DataInfo origin="BaseGrid" auxiliaryType="Undefined" displayUnitName="h" />
+      <QuantityInfo type="Time" orderIndex="0" Path="Chang et al.TGI.1mgkg|Time" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAABoAAAALcCqJRXAqCUZGFzhGC2hjRmhch0YEp6lGZ0+/RvvL30ZlQvdGaFwHR5kwEkfLBB1HAMAoR07lOUeYI0pH5khbRxsEZ0dlQndHzX6BR3QRikcbpJJHQMOaR+dVo0cAwKhHp1KxR0Iwt0cL</Values>
+      <RelatedColumnsCache />
+    </McBaseGrid>
+    <McDataColumn id="8adac5a0-10f6-4889-aaaf-dc57481af233" name="Measurement" dimension="Volume" isInternal="0" baseGrid="48f3efcf-eb97-4596-bcd7-9cfc900b01a4">
+      <DataInfo origin="Observation" auxiliaryType="Undefined" displayUnitName="l" />
+      <QuantityInfo type="Undefined" orderIndex="0" Path="Chang et al.TGI.1mgkg|Measurement" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAABoAAAALCAOfOZ6btjlOdqM54/2zObY7ozmhrKA5GNnBOSB02TkOfPM5zj//OXDVDTr5Chw6D2oYOol6Mjru7E46e8dUOn5cZTq2oYg6Tw6YOm/mfDrlzZM6NmKROlC3kzpBaps6afyuOmV+tToL</Values>
+      <RelatedColumnsCache />
+    </McDataColumn>
+  </Columns>
+  <ExtendedProperties>
+    <StringExtendedProperty name="Sheet" readOnly="0" value="TGI.1mgkg" />
+    <StringExtendedProperty name="Dose" readOnly="0" value="IV__1mgKg_TvcMMAE_Mouse" />
+  </ExtendedProperties>
+</McDataRepository>

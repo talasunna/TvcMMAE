@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<McDataRepository id="e3939e8f-3e95-4819-9f71-172ab38ed4c2" name="Chang et al.TGI.IV__10mgKg_TvcMMAE_Mouse" icon="ObservedData" configurationId="dcf1e31f-b44d-4fb3-9346-a41203726a9b" version="18">
+<McDataRepository id="5b990521-c731-4b18-b3ac-ad47182a5080" name="Chang et al.TGI.10mgkg" icon="ObservedData" configurationId="6bbdd511-5dc4-43bb-83db-324baf0ade9a" version="18">
   <Columns>
-    <McBaseGrid id="8e395955-af37-4e39-ad1f-792df0368407" name="Time" dimension="Time" isInternal="0" baseGrid="8e395955-af37-4e39-ad1f-792df0368407">
-      <DataInfo origin="BaseGrid" auxiliaryType="Undefined" displayUnitName="day(s)" />
-      <QuantityInfo type="Time" orderIndex="0" Path="Chang et al.TGI.IV__10mgKg_TvcMMAE_Mouse|Time" />
-      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAACcAAAALzcysRM3MrEUzMwVGZmZCRjMzcUYAAJBGMzOyRmZmy0YzM99GM7MARwCAC0fNTBZHzUwoR5oZM0dm5j1HmplJR81MVUdmZmZHmpl2R5rZg0czs4lHmhmPR2aml0czM6BHzUyoR5rZsEdmZrlHAIDBR5pZx0czM81HzUzVR81M3kdmZuZHZqbxRzMz+kdmJgFIAAAHSGZmDEhm5hBICw==</Values>
+    <McBaseGrid id="59658338-fa43-4590-924f-9cc3902874f1" name="Time" dimension="Time" isInternal="0" baseGrid="59658338-fa43-4590-924f-9cc3902874f1">
+      <DataInfo origin="BaseGrid" auxiliaryType="Undefined" displayUnitName="h" />
+      <QuantityInfo type="Time" orderIndex="0" Path="Chang et al.TGI.10mgkg|Time" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAACcAAAALkWKQRDV7tEWBxgxGiIdGRl10dUaJlI5GNXu0RpgjykYDmuFGSwsBR4HGDEeusxZHAMAoRzGUM0djaD5HmCNKR83eVUcbBGdHaSl4R9ozhEd0EYpHjXuPRzQOmEfboKBHgjOpRynGsUdO5blH9XfCR5BVyEcqM85Hzd7VR3Rx3keZkOZHTdjxR3be+kfNfgFIpyIHSMCMDEjUDxFICw==</Values>
       <RelatedColumnsCache />
     </McBaseGrid>
-    <McDataColumn id="40ffbf8b-f506-4d9e-a07c-560adce9f41a" name="Measurement" dimension="Volume" isInternal="0" baseGrid="8e395955-af37-4e39-ad1f-792df0368407">
+    <McDataColumn id="8898a874-7cb8-4cf4-8409-6d76e5af77e7" name="Measurement" dimension="Volume" isInternal="0" baseGrid="59658338-fa43-4590-924f-9cc3902874f1">
       <DataInfo origin="Observation" auxiliaryType="Undefined" displayUnitName="µl" />
-      <QuantityInfo type="Undefined" orderIndex="0" Path="Chang et al.TGI.IV__10mgKg_TvcMMAE_Mouse|Measurement" />
-      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAACcAAAALcfKeOa+Nrzm5b6g5kJiJOaX6cTlTTDQ59go5OR+THDnYFRM5H5McOezZBDmQmAk57NkEOSrE0Diayb04e9SXOJrJvTiayb04C8+qOAvPqjiayb04w1GhOJrJvThxQdo4ub7jOOzZBDmQmAk52BUTOa+NLzlTTDQ5KsRQOUgbgDlx8p452BWTOZrJvTmQ58Q5w6DcOZp6AjqGthA6Cw==</Values>
+      <QuantityInfo type="Undefined" orderIndex="0" Path="Chang et al.TGI.10mgkg|Measurement" />
+      <Values>AAEAAAD/////AQAAAAAAAAAPAQAAACcAAAALg8ScOZE4rTlM9KU5KYR/OYEAcTmr+DI5h1M3OZKQGjlPzhA5NvkZOb5i+jgPvQE5aFsBOeUwyThZM6w4CSyPOD64tDi0/rM4lj+gOAYNljhxFrI45RiVOLnnsDjDM8M4A/3LOGrR+jikIfo4PPgKObt/IjmnASc5BDdDOTBocjk38Zc5stCLOR7NuDlEw785guzUOXd+/zmnugw6Cw==</Values>
       <RelatedColumnsCache />
     </McDataColumn>
   </Columns>
   <ExtendedProperties>
-    <StringExtendedProperty name="Sheet" readOnly="0" value="TGI" />
+    <StringExtendedProperty name="Sheet" readOnly="0" value="TGI.10mgkg" />
     <StringExtendedProperty name="Dose" readOnly="0" value="IV__10mgKg_TvcMMAE_Mouse" />
   </ExtendedProperties>
 </McDataRepository>
