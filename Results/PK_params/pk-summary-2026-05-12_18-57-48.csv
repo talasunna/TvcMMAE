@@ -1,0 +1,8 @@
+simulation_file,IndividualId,QuantityPath,Cmax_Value,Tmax_Value,AUCtend_Value,AUCtinf_Value,Thalf_Value,Cmax_Unit,Tmax_Unit,AUCtend_Unit,AUCtinf_Unit,Thalf_Unit
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|VenousBlood|Plasma|TvcMMAE|conjugatedMMAE,4.0355597,0.05,5271.5103,5887.3086,60.844707,µmol/l,h,µmol*min/l,µmol*min/l,h
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|Tumor|TvcMMAE|conjugatedMMAEtumor,0.4219859,51.25,3433.6104,5265.4277,92.26629,µmol/l,h,µmol*min/l,µmol*min/l,h
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|Tumor|MMAE|freeMMAEtumor,0.12225904,161.75,769.47424,12951.174,1153.9955,µmol/l,h,µmol*min/l,µmol*min/l,h
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|Tumor|MMAE|totalMMAEtumor,0.47872823,68.75,4203.0845,8324.369,135.52531,µmol/l,h,µmol*min/l,µmol*min/l,h
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|VenousBlood|Plasma|MMAE|totalMMAEplasma,4.0368977,0.05,5294.1924,5917.078,61.049946,µmol/l,h,µmol*min/l,µmol*min/l,h
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|Tumor|nAb|totalmAbtumor,0.26189846,120,2271.0193,13577.322,517.8987,µmol/l,h,µmol*min/l,µmol*min/l,h
+Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml,0,Organism|VenousBlood|Plasma|nAb|totalmAbplasma,1.3474368,0.05,4017.0386,9616.461,241.17142,µmol/l,h,µmol*min/l,µmol*min/l,h
