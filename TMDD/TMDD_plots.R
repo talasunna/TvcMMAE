@@ -6,62 +6,78 @@ options(ospsuite.plots.watermarkEnabled = FALSE)
 
 # User inputs -------------------------------------------------------------
 
-mobi_path <- "~/Desktop/Thesis/TMDD/Mouse TvcMMAE 10 mg_kg with TMDD and Tumor.pkml"
+mobi_path <- "~/Desktop/Thesis/TMDD/Mouse MMAE 0.10 mg_kg.pkml"
 include_observed <- TRUE
 
 observed_spec <- data.frame(
   dataset_path = c(
-    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.FreeMMAE.pkml"
-    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.conjMMAE.pkml"
-    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.totalMMAE.pkml"
-    #"~/Desktop/Thesis/Datasets/Observed_data/plasmaPK/Chang et al.TvcMMAE.pkml"
-    #"~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.freeMMAE.tumor.pkml"
-    #"~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.conjMMAE.tumor.pkml"
-    #"~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.totalMMAE.tumor.pkml"
-    "~/Desktop/Thesis/Datasets/Observed_data/tumorPK/Chang et al.TvcMMAE.tumor.pkml"
+    "~/Desktop/Thesis/Data/Observed_data/plasmaPK/Chang et al.FreeMMAE.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/plasmaPK/Chang et al.conjMMAE.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/plasmaPK/Chang et al.totalMMAE.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/plasmaPK/Chang et al.TvcMMAE.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/tumorPK/Chang et al.freeMMAE.tumor.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/tumorPK/Chang et al.conjMMAE.tumor.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/tumorPK/Chang et al.totalMMAE.tumor.pkml"
+    #"~/Desktop/Thesis/Data/Observed_data/tumorPK/Chang et al.TvcMMAE.tumor.pkml"
     
     
   ),
   label = c(
+    "Observed Free MMAE in Plasma"
+    #"Observed Conjugated MMAE in Plasma"
+    #"Observed Total MMAE in Plasma"
+    #"Observed Total mAb in Plasma"
     #"Observed Free MMAE in Tumor"
     #"Observed Conjugated MMAE in Tumor"
     #"Observed Total MMAE in Tumor"
-    "Observed Total mAb in Tumor"
+    #"Observed Total mAb in Tumor"
   ),
   color = c(
     "#0072B2"
-    #"darkgreen"
-    #"red"
+    #"darkgreen",
+    #"red",
+    #"pink"
   ),
   shape = c(
     16
-    #17,
-    #18
+    #16,
+    #16,
+    #16
   ),
   stringsAsFactors = FALSE
 )
 
-plot_title <- "Total mAb Concentration in Tumor vs. Time"
+#plot_title <- "Total mAb Concentration in Tumor vs. Time"
 
 curve_spec <- data.frame(
   sim_path = c(
+    "Organism|VenousBlood|Plasma|MMAE|Concentration in container"
+    #"Organism|VenousBlood|Plasma|TvcMMAE|conjugatedMMAE"
+    #"Organism|VenousBlood|Plasma|MMAE|totalMMAEplasma"
+    #"Organism|VenousBlood|Plasma|nAb|totalmAbplasma"
     #"Organism|Tumor|MMAE|freeMMAEtumor"
     #"Organism|Tumor|TvcMMAE|conjugatedMMAEtumor"
     #"Organism|Tumor|MMAE|totalMMAEtumor"
-    "Organism|Tumor|nAb|totalmAbtumor"
+    #"Organism|Tumor|nAb|totalmAbtumor"
     
     
     
   ),
   label = c(
+    "Free MMAE in Plasma"
+    #"Conjugated MMAE in Plasma"
+    #"Total MMAE in Plasma"
+    #"Total mAb in Plasma"
     #"Free MMAE Concentration in Tumor"
     #"Conjugated MMAE in Tumor"
     #"Total MMAE in Tumor"
-    "Total mAb in Tumor"
+    #"Total mAb in Tumor"
     
   ),
   color = c(
-    "#E69F00" 
+    #"#D55E00",
+    #"#009E73",
+    "#CC79A7"
     #"darkgreen"
     #"red"
   ),
@@ -164,7 +180,7 @@ build_legend_spec <- function(
 make_time_profile_plot <- function(
     plot_data,
     legend_spec,
-    title,
+    #title,
     include_observed = FALSE,
     x_unit = ospUnits$Time$h,
     y_scale = "log"
@@ -204,7 +220,7 @@ make_time_profile_plot <- function(
       breaks = legend_spec$order
     ) +
     labs(
-      title = title,
+      #title = title,
       x = "Time [h]",
       y = "Concentration [\u03bcmol/l]",
       color = NULL,
@@ -226,8 +242,8 @@ make_time_profile_plot <- function(
     ) +
     theme_bw(base_size = 12) +
     theme(
-      plot.title = element_text(hjust = 0.5),
-      legend.position = c(0.60, 0.40),
+      #plot.title = element_text(hjust = 0.5),
+      legend.position = c(0.40, 0.80),
       legend.justification = c(0, 1),
       legend.title = element_blank(),
       legend.background = element_rect(fill = "white", color = "grey70"),
@@ -238,7 +254,7 @@ make_time_profile_plot <- function(
 plot_pk_profile <- function(
     mobi_path,
     curve_spec,
-    plot_title,
+    #plot_title,
     include_observed = FALSE,
     observed_spec = NULL,
     x_unit = ospUnits$Time$h,
@@ -267,7 +283,7 @@ plot_pk_profile <- function(
   make_time_profile_plot(
     plot_data = plot_data,
     legend_spec = legend_spec,
-    title = plot_title,
+    #title = plot_title,
     include_observed = include_observed,
     x_unit = x_unit,
     y_scale = y_scale
@@ -279,7 +295,7 @@ plot_pk_profile <- function(
 p <- plot_pk_profile(
   mobi_path = mobi_path,
   curve_spec = curve_spec,
-  plot_title = plot_title,
+  #plot_title = plot_title,
   include_observed = include_observed,
   observed_spec = observed_spec
 )
