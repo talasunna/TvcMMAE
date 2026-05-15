@@ -10,8 +10,8 @@ options(ospsuite.plots.watermarkEnabled = FALSE)
 # Paths -------------------------------------------------------------------
 
 sim_path <- "~/Desktop/Thesis/PD/TGI.pkml"
-out_path <- "Organism|Tumor|MMAE|totalMMAEtumor"
-dataset_path <- "~/Desktop/Thesis/Data/Observed_data/tumorPK/Chang et al.totalMMAE.tumor.pkml"
+out_path <- "Organism|Tumor|Volume"
+dataset_path <- "~/Desktop/Thesis/Data/Observed_data/PD/Chang et al.TGI.ctrl.pkml"
 
 # Plot options ------------------------------------------------------------
 
